@@ -2,7 +2,7 @@
 class DatabaseManager {
     constructor() {
         this.dbName = 'RestaurantDB';
-        this.version = 1;
+        this.version = 2;
         this.db = null;
     }
 
@@ -103,6 +103,26 @@ class DatabaseManager {
                     const notifStore = db.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true });
                     notifStore.createIndex('read', 'read', { unique: false });
                     notifStore.createIndex('created_at', 'created_at', { unique: false });
+                }
+
+                // POS Orders
+                if (!db.objectStoreNames.contains('pos_orders')) {
+                    const posStore = db.createObjectStore('pos_orders', { keyPath: 'id', autoIncrement: true });
+                    posStore.createIndex('department', 'department', { unique: false });
+                    posStore.createIndex('created_at', 'created_at', { unique: false });
+                }
+
+                // Employee Meals (for employee cashier)
+                if (!db.objectStoreNames.contains('employee_meals')) {
+                    const mealsStore = db.createObjectStore('employee_meals', { keyPath: 'id', autoIncrement: true });
+                    mealsStore.createIndex('name', 'name', { unique: false });
+                }
+
+                // Employee Meal Orders
+                if (!db.objectStoreNames.contains('employee_meal_orders')) {
+                    const mealOrdersStore = db.createObjectStore('employee_meal_orders', { keyPath: 'id', autoIncrement: true });
+                    mealOrdersStore.createIndex('employee_id', 'employee_id', { unique: false });
+                    mealOrdersStore.createIndex('created_at', 'created_at', { unique: false });
                 }
             };
         });

@@ -263,8 +263,16 @@ const storage = {
         localStorage.setItem(key, JSON.stringify(value));
     },
     get(key, defaultValue = null) {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
+        try {
+            const item = localStorage.getItem(key);
+            if (!item || item === '' || item === 'undefined' || item === 'null') {
+                return defaultValue;
+            }
+            return JSON.parse(item);
+        } catch (error) {
+            console.warn(`Error parsing localStorage key "${key}":`, error);
+            return defaultValue;
+        }
     },
     remove(key) {
         localStorage.removeItem(key);

@@ -258,7 +258,7 @@ async function showPurchaseInvoices() {
                                 <td>${inv.invoice_number}</td>
                                 <td>${formatDate(inv.date)}</td>
                                 <td>${inv.supplier_name}</td>
-                                <td>${inv.items ? JSON.parse(inv.items).length : 0}</td>
+                                <td>${inv.items ? (typeof inv.items === 'string' ? (() => { try { return JSON.parse(inv.items).length; } catch(e) { return 0; } })() : inv.items.length) : 0}</td>
                                 <td>${formatCurrency(inv.total_amount)}</td>
                                 <td>
                                     <button class="btn-icon" onclick="viewInvoiceDetails(${inv.id})" title="عرض">👁️</button>
@@ -432,7 +432,13 @@ async function savePurchaseInvoice(event) {
 
 async function viewInvoiceDetails(id) {
     const invoice = await db.getById('purchase_invoices', id);
-    const items = JSON.parse(invoice.items);
+    let items = [];
+    try {
+        items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items;
+    } catch (error) {
+        console.error('Error parsing invoice items:', error);
+        items = [];
+    }
     
     const detailsHTML = `
         <div class="invoice-details">

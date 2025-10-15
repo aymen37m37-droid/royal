@@ -19,7 +19,7 @@ async function initApp() {
         setupEventListeners();
 
         // Load initial module
-        loadModule('dashboard');
+        await loadModule('dashboard');
 
         // Check for notifications
         await updateNotifications();
@@ -34,7 +34,11 @@ async function initApp() {
 
     } catch (error) {
         console.error('Failed to initialize app:', error);
-        showToast('حدث خطأ في تهيئة التطبيق', 'error');
+        if (error && error.message) {
+            showToast('خطأ: ' + error.message, 'error');
+        } else {
+            showToast('حدث خطأ في تهيئة التطبيق', 'error');
+        }
     }
 }
 
@@ -88,8 +92,14 @@ async function loadModule(module) {
             case 'inventory':
                 await loadInventory();
                 break;
+            case 'pos':
+                await loadPOS();
+                break;
             case 'employees':
                 await loadEmployees();
+                break;
+            case 'employee_cashier':
+                await loadEmployeeCashier();
                 break;
             case 'suppliers':
                 await loadSuppliers();
@@ -161,7 +171,7 @@ async function updateNotifications() {
                 <div style="font-weight: 600;">${notif.title}</div>
                 <div style="font-size: 0.875rem; color: var(--text-secondary);">${notif.message}</div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                    ${formatDate(notif.created_at)}
+                    ${notif.created_at ? formatDate(notif.created_at) : ''}
                 </div>
             </div>
         `).join('');
@@ -245,6 +255,15 @@ async function initSampleData() {
         });
     }
 }
+
+// Global Error Handler
+window.addEventListener('error', function(event) {
+    console.error('Global error caught:', event.error);
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+});
 
 // Start App
 document.addEventListener('DOMContentLoaded', initApp);

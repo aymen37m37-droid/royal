@@ -116,7 +116,14 @@ function renderInventoryRows(items) {
 
 function searchInventoryItems(query) {
     db.getAll('inventory_items').then(items => {
-        const filtered = searchFilter(items, query, ['name', 'category']);
+        const filtered = items.filter(item => {
+            const searchTerm = query.toLowerCase();
+            return (
+                item.name.toLowerCase().includes(searchTerm) ||
+                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
+                item.id.toString().includes(searchTerm)
+            );
+        });
         document.querySelector('#inventoryTable tbody').innerHTML = renderInventoryRows(filtered);
     });
 }
@@ -157,16 +164,6 @@ function showAddItemForm() {
                     <input type="number" name="min_quantity" class="form-input" value="10" min="0">
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">سعر الشراء *</label>
-                    <input type="number" name="purchase_price" class="form-input" step="0.01" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">سعر البيع *</label>
-                    <input type="number" name="sell_price" class="form-input" step="0.01" min="0" required>
-                </div>
-            </div>
             <div class="form-group">
                 <label class="form-label">تاريخ انتهاء الصلاحية *</label>
                 <input type="date" name="expiry_date" class="form-input" required>
@@ -190,8 +187,8 @@ async function saveItem(event) {
         quantity: parseFloat(formData.get('quantity')),
         unit: formData.get('unit'),
         min_quantity: parseFloat(formData.get('min_quantity')) || 10,
-        purchase_price: parseFloat(formData.get('purchase_price')),
-        sell_price: parseFloat(formData.get('sell_price')),
+        purchase_price: 0,
+        sell_price: 0,
         expiry_date: formData.get('expiry_date')
     };
 
@@ -660,7 +657,13 @@ async function saveStockAudit(event) {
 
 async function viewAuditDetails(id) {
     const audit = await db.getById('stock_audits', id);
-    const items = JSON.parse(audit.items);
+    let items = [];
+    try {
+        items = typeof audit.items === 'string' ? JSON.parse(audit.items) : audit.items;
+    } catch (error) {
+        console.error('Error parsing audit items:', error);
+        items = [];
+    }
     
     const detailsHTML = `
         <div class="stats-grid mb-2">

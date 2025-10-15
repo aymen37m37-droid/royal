@@ -50,8 +50,13 @@ async function showEmployeesList() {
                 <button class="btn btn-primary" onclick="showAddEmployeeForm()">➕ إضافة موظف</button>
             </div>
 
+            <div style="margin-bottom: 1rem;">
+                <input type="text" id="searchEmployees" class="form-input" placeholder="بحث بالاسم أو الرقم..." 
+                    oninput="searchEmployees(this.value)">
+            </div>
+
             <div class="table-container">
-                <table>
+                <table id="employeesTable">
                     <thead>
                         <tr>
                             <th>كود</th>
@@ -89,6 +94,42 @@ async function showEmployeesList() {
             </div>
         </div>
     `;
+}
+
+function searchEmployees(query) {
+    db.getAll('employees').then(employees => {
+        const filtered = employees.filter(emp => {
+            const searchTerm = query.toLowerCase();
+            return (
+                (emp.name && emp.name.toLowerCase().includes(searchTerm)) ||
+                emp.id.toString().includes(searchTerm) ||
+                (emp.department && emp.department.toLowerCase().includes(searchTerm))
+            );
+        });
+        
+        const tbody = document.querySelector('#employeesTable tbody');
+        if (tbody) {
+            tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="8" class="text-center">لا توجد نتائج</td></tr>' :
+              filtered.map(emp => {
+                const hourCost = emp.salary / 176;
+                return `
+                <tr>
+                    <td>${emp.id}</td>
+                    <td>${emp.name}</td>
+                    <td>${emp.position || '-'}</td>
+                    <td>${emp.department || '-'}</td>
+                    <td>${formatCurrency(emp.salary || 0)}</td>
+                    <td>${formatCurrency(hourCost)}</td>
+                    <td><span class="badge ${emp.status === 'active' ? 'text-success' : 'text-error'}">${emp.status === 'active' ? 'نشط' : 'غير نشط'}</span></td>
+                    <td>
+                        <button class="btn-icon" onclick="editEmployee(${emp.id})" title="تعديل">✏️</button>
+                        <button class="btn-icon" onclick="viewEmployeeAccount(${emp.id})" title="كشف حساب">📊</button>
+                        <button class="btn-icon" onclick="deleteEmployee(${emp.id})" title="حذف">🗑️</button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+    });
 }
 
 function showAddEmployeeForm() {
