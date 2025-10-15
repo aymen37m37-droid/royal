@@ -1,0 +1,27 @@
+{
+  "name": "restaurant-management-system",
+  "version": "2.0.0",
+  "description": "نظام إدارة مطاعم متكامل - Laravel + MySQL",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python3 -m http.server 5000",
+    "backend": "cd backend && php artisan serve",
+    "migrate": "cd backend && php artisan migrate",
+    "migrate:fresh": "cd backend && php artisan migrate:fresh",
+    "key:generate": "cd backend && php artisan key:generate"
+  },
+  "keywords": [
+    "restaurant",
+    "management",
+    "pos",
+    "inventory",
+    "laravel",
+    "mysql"
+  ],
+  "author": "Restaurant Management Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "your-repo-url"
+  }
+}
